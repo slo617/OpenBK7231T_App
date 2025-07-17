@@ -93,12 +93,16 @@ static void ScaleAndUpdate(bl0942_data_t * data) {
     float frequency = 2 * 500000.0f / data->freq;
 
     float energyWh = 0;
-    if (PrevCfCnt[adeviceindex] != CF_CNT_INVALID) {
-      int diff = (data->cf_cnt < PrevCfCnt[adeviceindex]
-        ? data->cf_cnt + (0xFFFFFF - PrevCfCnt[adeviceindex]) + 1
-        : data->cf_cnt - PrevCfCnt[adeviceindex]);
-      energyWh =
-        fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
+    if ((!CFG_HasFlag(OBK_FLAG_POWER_FORCE_ZERO_IF_RELAYS_OPEN))
+	  && Channel_AreAllRelaysOpen()) 
+    {
+      if (PrevCfCnt[adeviceindex] != CF_CNT_INVALID) {
+        int diff = (data->cf_cnt < PrevCfCnt[adeviceindex]
+          ? data->cf_cnt + (0xFFFFFF - PrevCfCnt[adeviceindex]) + 1
+          : data->cf_cnt - PrevCfCnt[adeviceindex]);
+        energyWh =
+          fabsf(PwrCal_ScalePowerOnly(diff)) * 1638.4f * 256.0f / 3600.0f;
+      }
     }
     PrevCfCnt[adeviceindex] = data->cf_cnt;
 #if ENABLE_BL_TWIN
